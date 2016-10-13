@@ -3,7 +3,10 @@
 
 //A Mega32u4 based SDVX/K-Shoot Mania Controller
 
+//Note: Arduino Micro board not fully implemented
+
 //Define "PROMICRO" or "MICRO" depending on which board you are using
+//Note: Pro Micro and Micro are NOT pin compatible
 #define PROMICRO
 
 //Arduino Pro Micro pin declarations
@@ -19,6 +22,13 @@
 #define BS5 15
 #define BW1 14
 #define BW2 16
+#define BS1LED 3
+#define BS2LED 4
+#define BS3LED 5
+#define BS4LED 6
+#define BS5LED 10
+#define BW1LED 8
+#define BW2LED 9
 #endif
 
 //Arduino Micro pin declarations
@@ -96,26 +106,26 @@ void loop(){
   #ifdef PROMICRO
   while(active == true){
     posOverflow();
-    kbPress(BS1, &bs1flag, BS1char);
-    kbPress(BS2, &bs2flag, BS2char);
-    kbPress(BS3, &bs3flag, BS3char);
-    kbPress(BS4, &bs4flag, BS4char);
-    kbPress(BS5, &bs5flag, BS5char);
-    kbPress(BW1, &bw1flag, BW1char);
-    kbPress(BW2, &bw2flag, BW2char);
+    kbPress(BS1, &bs1flag, BS1char, BS1LED);
+    kbPress(BS2, &bs2flag, BS2char, BS2LED);
+    kbPress(BS3, &bs3flag, BS3char, BS3LED);
+    kbPress(BS4, &bs4flag, BS4char, BS4LED);
+    kbPress(BS5, &bs5flag, BS5char, BS5LED);
+    kbPress(BW1, &bw1flag, BW1char, BW1LED);
+    kbPress(BW2, &bw2flag, BW2char, BW2LED);
   }
   #endif
   
   #ifdef MICRO
   while(digitalRead(PROGSW) == LOW){
     posOverflow();
-    kbPress(BS1, &bs1flag, BS1char);
-    kbPress(BS2, &bs2flag, BS2char);
-    kbPress(BS3, &bs3flag, BS3char);
-    kbPress(BS4, &bs4flag, BS4char);
-    kbPress(BS5, &bs5flag, BS5char);
-    kbPress(BW1, &bw1flag, BW1char);
-    kbPress(BW2, &bw2flag, BW2char);
+    kbPress(BS1, &bs1flag, BS1char, BS1LED);
+    kbPress(BS2, &bs2flag, BS2char, BS2LED);
+    kbPress(BS3, &bs3flag, BS3char, BS3LED);
+    kbPress(BS4, &bs4flag, BS4char, BS4LED);
+    kbPress(BS5, &bs5flag, BS5char, BS5LED);
+    kbPress(BW1, &bw1flag, BW1char, BW1LED);
+    kbPress(BW2, &bw2flag, BW2char, BW2LED);
   }
   #endif
 
@@ -187,13 +197,15 @@ void libInitPro(){
 #endif
 /********************************************Shared Functions*********************************************/
 
-void kbPress(int pin, int *flag, int key){ //KB input function
+void kbPress(int pin, int *flag, int key, int led){ //KB input function
   if(digitalRead(pin) == LOW && *flag == 0){
     Keyboard.press(key);
+    digitalWrite(led, HIGH);
     *flag = 1;
   }
   if(digitalRead(pin) == HIGH && *flag == 1){
     Keyboard.release(key);
+    digitalWrite(led, LOW);
     *flag = 0;
   }
 }
