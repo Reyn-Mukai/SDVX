@@ -3,12 +3,15 @@
 
 //A Mega32u4 based SDVX/K-Shoot Mania Controller
 
-//Arduino Pro Micro/Micro pin declarations
-#define E1A 1
-#define E1B 0
+//Define "PROMICRO" or "MICRO" depending on which board you are using
+#define PROMICRO
+
+//Arduino Pro Micro pin declarations
+#ifdef PROMICRO
+#define E1A 0
+#define E1B 1
 #define E2A 2
 #define E2B 7
-#define PROGSW 4
 #define BS1 21 //A3
 #define BS2 20 //A2
 #define BS3 19 //A1
@@ -16,7 +19,14 @@
 #define BS5 15
 #define BW1 14
 #define BW2 16
+#endif
+
+//Arduino Micro pin declarations
+#ifdef MICRO
 #define ACTIVELED 10
+#define PROGSW 4
+#endif
+
 //Button keybindings
 #define BS1char 0x32
 #define BS2char 0x33
@@ -33,11 +43,25 @@ int bs1flag, bs2flag, bs3flag, bs4flag, bs5flag, bw1flag, bw2flag = 0;
 int bs1deb, bs2deb, bs3deb, bs4deb, bs5deb, bw1deb, bw2deb = 0;
 
 void setup(){
+  #ifdef PROMICRO
   pinMode(E1A, INPUT_PULLUP);
   pinMode(E1B, INPUT_PULLUP);
   pinMode(E2A, INPUT_PULLUP);
   pinMode(E2B, INPUT_PULLUP);
-  pinMode(PROGSW, INPUT_PULLUP);
+  pinMode(BS1, INPUT_PULLUP);
+  pinMode(BS2, INPUT_PULLUP);
+  pinMode(BS3, INPUT_PULLUP);
+  pinMode(BS4, INPUT_PULLUP);
+  pinMode(BS5, INPUT_PULLUP);
+  pinMode(BW1, INPUT_PULLUP);
+  pinMode(BW2, INPUT_PULLUP);
+  #endif
+
+  #ifdef MICRO
+  pinMode(E1A, INPUT_PULLUP);
+  pinMode(E1B, INPUT_PULLUP);
+  pinMode(E2A, INPUT_PULLUP);
+  pinMode(E2B, INPUT_PULLUP);
   pinMode(BS1, INPUT_PULLUP);
   pinMode(BS2, INPUT_PULLUP);
   pinMode(BS3, INPUT_PULLUP);
@@ -46,11 +70,13 @@ void setup(){
   pinMode(BW1, INPUT_PULLUP);
   pinMode(BW2, INPUT_PULLUP);
   pinMode(ACTIVELED, OUTPUT);
+  pinMode(PROGSW, INPUT_PULLUP);
+  #endif
 
-  attachInterrupt(digitalPinToInterrupt(1), Encoder1A, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(0), Encoder1B, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(2), Encoder2A, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(7), Encoder2B, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(E1B), Encoder1A, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(E1A), Encoder1B, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(E2A), Encoder2A, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(E2B), Encoder2B, CHANGE);
 
   Serial.begin(115200);
   Serial.println("Pins initialized.");
@@ -58,9 +84,17 @@ void setup(){
 
 void loop(){
   posOverflow(); //Checks/fixes overflow
-  libInit(); //Initializes keyboard & mouse if PROGSW is low  
-  libTerm(); //Terminates keyboard & mouse if PROGSW is high
-  while(digitalRead(PROGSW) == LOW){ //Active gamepad loop
+  #ifdef PROMICRO  
+  libInitPro();
+  #endif
+    
+  #ifdef MICRO
+  libInit();
+  libTerm();
+  #endif
+
+  #ifdef PROMICRO
+  while(active == true){
     posOverflow();
     kbPress(BS1, &bs1flag, BS1char);
     kbPress(BS2, &bs2flag, BS2char);
@@ -70,6 +104,21 @@ void loop(){
     kbPress(BW1, &bw1flag, BW1char);
     kbPress(BW2, &bw2flag, BW2char);
   }
+  #endif
+  
+  #ifdef MICRO
+  while(digitalRead(PROGSW) == LOW){
+    posOverflow();
+    kbPress(BS1, &bs1flag, BS1char);
+    kbPress(BS2, &bs2flag, BS2char);
+    kbPress(BS3, &bs3flag, BS3char);
+    kbPress(BS4, &bs4flag, BS4char);
+    kbPress(BS5, &bs5flag, BS5char);
+    kbPress(BW1, &bw1flag, BW1char);
+    kbPress(BW2, &bw2flag, BW2char);
+  }
+  #endif
+
   kbDeb(BS1, &bs1deb); //Serial debug
   kbDeb(BS2, &bs2deb);
   kbDeb(BS3, &bs3deb);
@@ -79,10 +128,13 @@ void loop(){
   kbDeb(BW2, &bw2deb);
 }
 
+/*********************************************Micro Functions*********************************************/
+#ifdef MICRO
+
 void libInit(){ //Initializes KB/mouse libs when switched to gamepad mode
   if(digitalRead(PROGSW) == LOW && active == false){
     active = true;
-    analogWrite(ACTIVELED, 200);
+    digitalWrite(ACTIVELED, HIGH);
     Keyboard.begin();
     Mouse.begin();
     debReset();
@@ -93,7 +145,7 @@ void libInit(){ //Initializes KB/mouse libs when switched to gamepad mode
 void libTerm(){ //Terminates KB/mouse libs when switched to debug mode
   if(digitalRead(PROGSW) == HIGH && active == true){
     active = false;
-    analogWrite(ACTIVELED, 0);
+    digitalWrite(ACTIVELED, LOW);
     Keyboard.releaseAll();
     Keyboard.end();
     Mouse.end();
@@ -115,6 +167,25 @@ void debReset(){ //Resets debug flags to 0
     Serial.println("Deb reset");
   }
 }
+
+#endif
+/*******************************************Pro Micro Functions*******************************************/
+#ifdef PROMICRO
+
+void libInitPro(){
+  if(digitalRead(BS5) == LOW && digitalRead(BW1) == LOW && digitalRead(BW2) == LOW){
+    active = true;
+    Keyboard.begin();
+    Mouse.begin();
+    Serial.println("Mouse & KB lib active");
+    for(int i = 0;i < 3;i++){
+      Serial.println("Entered LED blink for loop");
+    }
+  }
+}
+
+#endif
+/********************************************Shared Functions*********************************************/
 
 void kbPress(int pin, int *flag, int key){ //KB input function
   if(digitalRead(pin) == LOW && *flag == 0){
@@ -152,6 +223,9 @@ void posOverflow(){ //Resets encoder position (unused)
     Serial.println("encoder2Pos controlled reset");
   }
 }
+
+//X knob (left) CW -> Right
+//Y knob (right) CW -> Up
 
 void Encoder1A(){
   // look for a low-to-high on channel A
