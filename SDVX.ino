@@ -65,6 +65,13 @@ void setup(){
   pinMode(BS5, INPUT_PULLUP);
   pinMode(BW1, INPUT_PULLUP);
   pinMode(BW2, INPUT_PULLUP);
+  pinMode(BS1LED, OUTPUT);
+  pinMode(BS2LED, OUTPUT);
+  pinMode(BS3LED, OUTPUT);
+  pinMode(BS4LED, OUTPUT);
+  pinMode(BS5LED, OUTPUT);
+  pinMode(BW1LED, OUTPUT);
+  pinMode(BW2LED, OUTPUT);
   #endif
 
   #ifdef MICRO
@@ -106,26 +113,20 @@ void loop(){
   #ifdef PROMICRO
   while(active == true){
     posOverflow();
-    kbPress(BS1, &bs1flag, BS1char, BS1LED);
-    kbPress(BS2, &bs2flag, BS2char, BS2LED);
-    kbPress(BS3, &bs3flag, BS3char, BS3LED);
-    kbPress(BS4, &bs4flag, BS4char, BS4LED);
-    kbPress(BS5, &bs5flag, BS5char, BS5LED);
-    kbPress(BW1, &bw1flag, BW1char, BW1LED);
-    kbPress(BW2, &bw2flag, BW2char, BW2LED);
+    kbPress(BS1, BS1LED, &bs1flag, BS1char);
+    kbPress(BS2, BS2LED, &bs2flag, BS2char);
+    kbPress(BS3, BS3LED, &bs3flag, BS3char);
+    kbPress(BS4, BS4LED, &bs4flag, BS4char);
+    kbPress(BS5, BS5LED, &bs5flag, BS5char);
+    kbPress(BW1, BW1LED, &bw1flag, BW1char);
+    kbPress(BW2, BW2LED, &bw2flag, BW2char);
   }
   #endif
   
   #ifdef MICRO
   while(digitalRead(PROGSW) == LOW){
     posOverflow();
-    kbPress(BS1, &bs1flag, BS1char, BS1LED);
-    kbPress(BS2, &bs2flag, BS2char, BS2LED);
-    kbPress(BS3, &bs3flag, BS3char, BS3LED);
-    kbPress(BS4, &bs4flag, BS4char, BS4LED);
-    kbPress(BS5, &bs5flag, BS5char, BS5LED);
-    kbPress(BW1, &bw1flag, BW1char, BW1LED);
-    kbPress(BW2, &bw2flag, BW2char, BW2LED);
+    
   }
   #endif
 
@@ -193,11 +194,11 @@ void libInitPro(){
     }
   }
 }
-
+\
 #endif
 /********************************************Shared Functions*********************************************/
 
-void kbPress(int pin, int *flag, int key, int led){ //KB input function
+void kbPress(int pin, int led, int *flag, int key){ //KB input function
   if(digitalRead(pin) == LOW && *flag == 0){
     Keyboard.press(key);
     digitalWrite(led, HIGH);
