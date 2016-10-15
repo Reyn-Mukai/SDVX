@@ -3,11 +3,18 @@
 
 //A Mega32u4 based SDVX/K-Shoot Mania Controller
 
-//Note: Arduino Micro board not fully implemented
-
 //Define "PROMICRO" or "MICRO" depending on which board you are using
 //Note: Pro Micro and Micro are NOT pin compatible
-#define PROMICRO
+#define MICRO
+
+//Button keybindings (modify to change bindings)  
+#define BS1char 0x32
+#define BS2char 0x33
+#define BS3char 0x34
+#define BS4char 0x35
+#define BS5char 0xB0
+#define BW1char 0x31
+#define BW2char 0x36
 
 //Arduino Pro Micro pin declarations
 #ifdef PROMICRO
@@ -33,18 +40,27 @@
 
 //Arduino Micro pin declarations
 #ifdef MICRO
-#define ACTIVELED 10
-#define PROGSW 4
+#define E1A 0
+#define E1B 1
+#define E2A 2
+#define E2B 3
+#define BS1 4
+#define BS2 5
+#define BS3 6
+#define BS4 7
+#define BS5 8
+#define BW1 9
+#define BW2 10
+#define BS1LED A0
+#define BS2LED A1
+#define BS3LED A2
+#define BS4LED A3
+#define BS5LED 13
+#define BW1LED A4
+#define BW2LED A5
+#define ACTIVELED 11 
+#define PROGSW 12
 #endif
-
-//Button keybindings
-#define BS1char 0x32
-#define BS2char 0x33
-#define BS3char 0x34
-#define BS4char 0x35
-#define BS5char 0xB0
-#define BW1char 0x31
-#define BW2char 0x36
 
 volatile int encoder1Pos = 0;
 volatile int encoder2Pos = 0;
@@ -86,8 +102,15 @@ void setup(){
   pinMode(BS5, INPUT_PULLUP);
   pinMode(BW1, INPUT_PULLUP);
   pinMode(BW2, INPUT_PULLUP);
-  pinMode(ACTIVELED, OUTPUT);
   pinMode(PROGSW, INPUT_PULLUP);
+  pinMode(ACTIVELED, OUTPUT);
+  pinMode(BS1LED, OUTPUT);
+  pinMode(BS2LED, OUTPUT);
+  pinMode(BS3LED, OUTPUT);
+  pinMode(BS4LED, OUTPUT);
+  pinMode(BS5LED, OUTPUT);
+  pinMode(BW1LED, OUTPUT);
+  pinMode(BW2LED, OUTPUT);
   #endif
 
   attachInterrupt(digitalPinToInterrupt(E1B), Encoder1A, CHANGE);
@@ -126,7 +149,13 @@ void loop(){
   #ifdef MICRO
   while(digitalRead(PROGSW) == LOW){
     posOverflow();
-    
+    kbPress(BS1, BS1LED, &bs1flag, BS1char);
+    kbPress(BS2, BS2LED, &bs2flag, BS2char);
+    kbPress(BS3, BS3LED, &bs3flag, BS3char);
+    kbPress(BS4, BS4LED, &bs4flag, BS4char);
+    kbPress(BS5, BS5LED, &bs5flag, BS5char);
+    kbPress(BW1, BW1LED, &bw1flag, BW1char);
+    kbPress(BW2, BW2LED, &bw2flag, BW2char);
   }
   #endif
 
@@ -194,7 +223,7 @@ void libInitPro(){
     }
   }
 }
-\
+
 #endif
 /********************************************Shared Functions*********************************************/
 
