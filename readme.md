@@ -22,6 +22,7 @@ Program selectable controller board presets
 Limitatioons:  
 Due to I/O constraints of the Pro Micro, all digital/analog pins are occupied. UART pins are also unavailable.  
 Due to I/O constraints of the Arduino Micro, UART and I2C are unavailable.  
+Due to I/O constraints of the Arduino Leonardo, UART and I2C are unavailable. Silk labeled I2C pins are internally conected to digital pins 2/3 are therefore also unavailable.  
 
 Features to be implemented:  
 Software reversible X/Y axis movement  
