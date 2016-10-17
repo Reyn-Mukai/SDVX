@@ -3,18 +3,17 @@
 
 //A Mega32u4 based SDVX/K-Shoot Mania Controller
 
-//Define "PROMICRO" or "MICRO" depending on which board you are using
-//Note: Pro Micro and Micro are NOT pin compatible
-#define MICRO
+//Valid board defines: "PROMICRO" "MICRO" "LEONARDO"
+#define PROMICRO
 
 //Button keybindings (modify to change bindings)  
-#define BS1char 0x32
-#define BS2char 0x33
-#define BS3char 0x34
-#define BS4char 0x35
-#define BS5char 0xB0
-#define BW1char 0x31
-#define BW2char 0x36
+#define BS1char 0xD8 //Left arrow
+#define BS2char 0xD9 //Down arrow
+#define BS3char 0xDA //Up arrow
+#define BS4char 0xD7 //Right arrow
+#define BS5char 0xB0 //Enter
+#define BW1char 0x31 //1
+#define BW2char 0x32 //2
 
 //Arduino Pro Micro pin declarations
 #ifdef PROMICRO
@@ -62,6 +61,30 @@
 #define PROGSW 12
 #endif
 
+//Arduino Leonardo pin declarations
+#ifdef LEONARDO
+#define E1A 0
+#define E1B 1
+#define E2A 2
+#define E2B 3
+#define BS1 A0
+#define BS2 A1
+#define BS3 A2
+#define BS4 A3
+#define BS5 A4
+#define BW1 4
+#define BW2 7
+#define BS1LED 5
+#define BS2LED 6
+#define BS3LED 9
+#define BS4LED 10
+#define BS5LED 11
+#define BW1LED 12
+#define BW2LED 13
+#define ACTIVELED 8
+#define PROGSW A5
+#endif
+
 volatile int encoder1Pos = 0;
 volatile int encoder2Pos = 0;
 int active = 0;
@@ -90,7 +113,7 @@ void setup(){
   pinMode(BW2LED, OUTPUT);
   #endif
 
-  #ifdef MICRO
+  #if defined(MICRO) || defined(LEONARDO)
   pinMode(E1A, INPUT_PULLUP);
   pinMode(E1B, INPUT_PULLUP);
   pinMode(E2A, INPUT_PULLUP);
@@ -128,7 +151,7 @@ void loop(){
   libInitPro();
   #endif
     
-  #ifdef MICRO
+  #if defined(MICRO) || defined(LEONARDO)
   libInit();
   libTerm();
   #endif
@@ -146,7 +169,7 @@ void loop(){
   }
   #endif
   
-  #ifdef MICRO
+  #if defined(MICRO) || defined(LEONARDO)
   while(digitalRead(PROGSW) == LOW){
     posOverflow();
     kbPress(BS1, BS1LED, &bs1flag, BS1char);
@@ -169,7 +192,7 @@ void loop(){
 }
 
 /*********************************************Micro Functions*********************************************/
-#ifdef MICRO
+#if defined(MICRO) || defined(LEONARDO)
 
 void libInit(){ //Initializes KB/mouse libs when switched to gamepad mode
   if(digitalRead(PROGSW) == LOW && active == false){
@@ -209,7 +232,7 @@ void debReset(){ //Resets debug flags to 0
 }
 
 #endif
-/*******************************************Pro Micro Functions*******************************************/
+/*************************************Pro Micro/Leonardo Functions**************************************/
 #ifdef PROMICRO
 
 void libInitPro(){
@@ -219,9 +242,22 @@ void libInitPro(){
     Mouse.begin();
     Serial.println("Mouse & KB lib active");
     for(int i = 0;i < 3;i++){
-      Serial.println("Entered LED blink for loop");
+      delay(16);
+      writeAll(HIGH);
+      delay(13);
+      writeAll(LOW);
     }
   }
+}
+
+void writeAll(int level){
+  digitalWrite(BS1LED, level);
+  digitalWrite(BS2LED, level);
+  digitalWrite(BS3LED, level);
+  digitalWrite(BS4LED, level);
+  digitalWrite(BS5LED, level);
+  digitalWrite(BW1LED, level);
+  digitalWrite(BW2LED, level);
 }
 
 #endif
@@ -266,8 +302,8 @@ void posOverflow(){ //Resets encoder position (unused)
   }
 }
 
+//Y knob (left) CW -> Down
 //X knob (left) CW -> Right
-//Y knob (right) CW -> Up
 
 void Encoder1A(){
   // look for a low-to-high on channel A
