@@ -17,10 +17,10 @@
 
 //Arduino Pro Micro pin declarations
 #ifdef PROMICRO
-#define E1A 0
-#define E1B 1
-#define E2A 2
-#define E2B 7
+#define E1A 2
+#define E1B 7
+#define E2A 0
+#define E2B 1
 #define BS1 21 //A3
 #define BS2 20 //A2
 #define BS3 19 //A1
@@ -90,6 +90,7 @@ volatile int encoder2Pos = 0;
 int active = 0;
 int bs1flag, bs2flag, bs3flag, bs4flag, bs5flag, bw1flag, bw2flag = 0;
 int bs1deb, bs2deb, bs3deb, bs4deb, bs5deb, bw1deb, bw2deb = 0;
+int escflag = 0;
 
 void setup(){
   #ifdef PROMICRO
@@ -166,6 +167,8 @@ void loop(){
     kbPress(BS5, BS5LED, &bs5flag, BS5char);
     kbPress(BW1, BW1LED, &bw1flag, BW1char);
     kbPress(BW2, BW2LED, &bw2flag, BW2char);
+    escPress();
+    Serial.println(escflag);
   }
   #endif
   
@@ -190,8 +193,7 @@ void loop(){
   kbDeb(BW1, &bw1deb);
   kbDeb(BW2, &bw2deb);
 }
-
-/*********************************************Micro Functions*********************************************/
+/***************************************Micro/Leonardo Functions******************************************/
 #if defined(MICRO) || defined(LEONARDO)
 
 void libInit(){ //Initializes KB/mouse libs when switched to gamepad mode
@@ -232,7 +234,7 @@ void debReset(){ //Resets debug flags to 0
 }
 
 #endif
-/*************************************Pro Micro/Leonardo Functions**************************************/
+/*******************************************Pro Micro Functions*******************************************/
 #ifdef PROMICRO
 
 void libInitPro(){
@@ -242,11 +244,22 @@ void libInitPro(){
     Mouse.begin();
     Serial.println("Mouse & KB lib active");
     for(int i = 0;i < 3;i++){
-      delay(16);
+      delay(15);
       writeAll(HIGH);
-      delay(13);
+      delay(12);
       writeAll(LOW);
     }
+  }
+}
+
+void escPress(){
+  if(digitalRead(BW1) == LOW && digitalRead(BW2) == LOW && digitalRead(BS5) == LOW && escflag == 0){
+    Keyboard.press(0xB1);
+    escflag = 1;
+  }
+  if((digitalRead(BW1) == HIGH || digitalRead(BW2) == HIGH || digitalRead(BS5) == HIGH) && escflag == 1){
+    Keyboard.release(0xB1);
+    escflag = 0;
   }
 }
 

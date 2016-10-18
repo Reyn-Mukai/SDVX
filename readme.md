@@ -5,6 +5,9 @@ SDVX/K-Shoot Mania program for the Sparkfun Pro Micro and official Arduino Micro
 
 Program emulates DJDAO SDVX/K-Shoot Mania style input modes. Arcade buttons send keystrokes. Rotary encoders emulate X/Y axis mouse movement.
 
+Gamepad/Debug Mode Toggle:  
+If using an Arduino Micro or Leonardo, gamepad and debug mode is toggled by a switch. If using a Pro Micro, the board will be on debug mode by default and is switched into gamepad mode by pressing the two rectangular button and the start button simultaneously.
+
 Required Software:  
 Arduino IDE
 
@@ -19,14 +22,14 @@ Serial debug mode
 Program selectable keybindings  
 Program selectable controller board presets  
 
-Limitatioons:  
+Limitations:  
 Due to I/O constraints of the Pro Micro, all digital/analog pins are occupied. UART pins are also unavailable.  
 Due to I/O constraints of the Arduino Micro, UART and I2C are unavailable.  
 Due to I/O constraints of the Arduino Leonardo, UART and I2C are unavailable. Silk labeled I2C pins are internally conected to digital pins 2/3 are therefore also unavailable.  
 
 Features to be implemented:  
 Software reversible X/Y axis movement  
-Escape/Back button key or keycombo  
+Software based debounce  
 
 For latest revision of code: https://github.com/Reyn-Mukai/SDVX
 
@@ -37,3 +40,4 @@ Required Parts:
 2x 50mm x 33mm Rectangular illuminated arcade buttons  
 2x 24PPR Rotary encoder (No detents preferred)  
 2x 30mm Diameter knobs  
+7x 0.1uf Ceramic/Film capacitors
